@@ -1,38 +1,192 @@
-.App {
-  text-align: center;
+body {
+	text-align: center;
+	font-weight: bold;
+	background-color: #292834;
+	color: white;
+	overflow: hidden
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+p {
+	margin: 0px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.Message {
+	color: rgb(255, 255, 255);
+	margin-bottom: 10px;
+	padding: 5px;
+	width: 100%;
+	border: hsl(245, 13%, 50%);
+	border-radius: 1px;
+	border-style: none none none none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.MessageMe {
+	width: fit-content;
+	height: fit-content;
+	position: relative;
+	float: right;
+	clear: both;
+	margin-right: 25px;
+	padding-right: 25px;
+	padding-left: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 4px;
+	background: #555;
 }
 
-.App-link {
-  color: #61dafb;
+.MessageOther {
+	clear: right;
+	text-align: left;
+	width: fit-content;
+	height: fit-content;
+	position: relative;
+	left: 25px;
+	padding-left: 25px;
+	padding-right: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 4px;
+	background: #555;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.AllMessages {
+	overflow-y: scroll;
+	height: 80vh;
+}
+
+.MessagePreview {
+	text-align: left;
+	position: relative;
+	left: 5%;
+	width: fit-content;
+	margin-bottom: 0px;
+}
+
+.MessagePreviewBody {
+	margin: 0px;
+	text-align: left;
+	position: relative;
+	left: 5%;
+	width: fit-content;
+	color: rgb(123, 123, 123);
+	font-weight: normal;
+}
+
+.MessageBoxInput {
+	position: fixed;
+	width: 90%;
+	left: 5%;
+	bottom: 5vh;
+	background-color: rgb(81, 81, 81);
+	border: rgb(31, 31, 31);
+	height: 3vh;
+	border-radius: 1.5vh;
+	font-size: 1.5vh;
+	color: rgb(255, 255, 255);
+}
+
+.SendMessageButton {
+	position: fixed;
+	width: 3vh;
+	height: 3vh;
+	left: 96%;
+	bottom: 5vh;
+	text-align: center;
+}
+
+.NewChatButton {
+	position: absolute;
+	bottom: 40px;
+	right: 40px;
+	height: 5vh;
+	width: 5vh;
+	border-radius: 8px;
+	background-color: rgb(104, 61, 212);
+	border: 3px solid rgb(104, 61, 212);
+	text-align: center;
+	transition-duration: 0.4s;
+}
+
+.NewChatButton:hover {
+	background-color: rgb(134, 91, 244);
+	border: 3px solid rgb(134, 91, 244);
+	border-radius: 3px;
+}
+
+.SquareButton {
+	position: absolute;
+	top: 40px;
+	left: 40px;
+	height: 2.5vh;
+	width: 2.5vh;
+	border-radius: 8px;
+	background-color: rgb(104, 61, 212);
+	border: 3px solid rgb(104, 61, 212);
+	text-align: center;
+	transition-duration: 0.4s;
+}
+
+.SquareButton:hover {
+	background-color: rgb(134, 91, 244);
+	border: 3px solid rgb(134, 91, 244);
+	border-radius: 3px;
+}
+
+.noselect {
+	-webkit-touch-callout: none;
+	/* iOS Safari */
+	-webkit-user-select: none;
+	/* Safari */
+	-khtml-user-select: none;
+	/* Konqueror HTML */
+	-moz-user-select: none;
+	/* Old versions of Firefox */
+	-ms-user-select: none;
+	/* Internet Explorer/Edge */
+	user-select: none;
+	/* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.TitleText {
+	text-align: center;
+	position: absolute;
+	left: 50%;
+	top: 0vh;
+	color: rgb(255, 255, 255);
+	height: 200px;
+}
+
+.StyledInput {
+	background-color: rgba(255, 255, 255, 0);
+	color: white;
+	border: 3px solid #555;
+	border-radius: 4px;
+	height: 2vh;
+	outline: none;
+	font-size: 2vh;
+	margin-right: 5px;
+	margin-top: 1vh;
+}
+
+.StyledButton {
+	background-color: rgb(104, 61, 212);
+	color: white;
+	border: 3px solid rgb(104, 61, 212);
+	border-radius: 8px;
+	width: 10vh;
+	font-size: 2vh;
+	transition-duration: 0.4s;
+}
+
+.StyledButton:hover {
+	background-color: rgb(134, 91, 244);
+	border: 3px solid rgb(134, 91, 244);
+	border-radius: 3px;
+}
+
+.ErrorText {
+	color: red;
+	font-size: 1vh;
 }
