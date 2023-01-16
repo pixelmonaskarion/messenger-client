@@ -61,6 +61,9 @@ class App extends React.Component {
 	}
 
 	homeScreen() {
+		Notification.requestPermission().then((value) => {
+			console.log(value);
+		});
 		this.setState({ ...this.state, screen: "chats" });
 	}
 
@@ -80,6 +83,7 @@ class App extends React.Component {
 	onReceivedMessage(message) {
 		let message_object = JSON.parse(message).message;
 		let finish = () => {
+			api.received_message(this.state.token, message_object.id);
 			if (this.state.chats[String(message_object.chat)] !== undefined) {
 				let messages = this.state.messages;
 				messages[String(message_object.chat)].push(message_object);
@@ -203,6 +207,7 @@ class SignInScreen extends React.Component {
 		return (<div className='Log In'>
 			<h1>Log In</h1>
 			<p>Username: <input type="text" className='StyledInput' id="login_username"></input></p>
+			<p>Password: <input type="text" className='StyledInput' id="login_password"></input></p>
 			<p>Display Name: <input type="text" className='StyledInput' id="login_display_name"></input></p>
 			<p className='ErrorText'>{this.state.error}</p>
 			<button className='StyledButton' onClick={() => this.login()}>Log in</button>
@@ -211,23 +216,33 @@ class SignInScreen extends React.Component {
 	login() {
 		let username = document.getElementById("login_username").value;
 		let display_name = document.getElementById("login_display_name").value;
+		let password = document.getElementById("login_password").value;
 		if (username.length === 0) {
 			this.setState({ ...this.state, error: "Username is empty" });
+			return;
+		}
+		if (password.length === 0) {
+			this.setState({ ...this.state, error: "Password is empty" });
 			return;
 		}
 		if (display_name.length === 0) {
 			this.setState({ ...this.state, error: "Display name is empty" });
 			return;
 		}
-		api.login(username).then((json) => {
-			if ("token" in json) {
+		api.login(username, password).then((json) => {
+			if (json["server"] !== undefined) {
+				if (json["server"] === "incorrect password") {
+					this.setState({ ...this.state, error: "Incorrect password" });
+				} else {
+					this.setState({ ...this.state, error: "An unknown error occured" });
+				}
+			} else {
 				this.props.setUser(json.token, username, () => {
 					api.set_user_profile(json.token, display_name);
 					api.subscribeEvents(json.token, this.props.onReceivedMessage);
 					this.props.homeScreen();
 				});
-			} else {
-				this.setState({ ...this.state, error: "That user already exists" });
+				
 			}
 		});
 	}
