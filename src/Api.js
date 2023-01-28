@@ -16,9 +16,9 @@ async function login(username, password) {
     return reponse.json();
 }
 
-async function set_user_profile(token, display_name) {
-    let json = JSON.stringify({ name: display_name });
-    fetch(API_URL + "/create-user/" + token, {
+async function set_user_profile(token, display_name, color) {
+    let json = JSON.stringify({ name: display_name, color: color});
+    await fetch(API_URL + "/create-user/" + token, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -33,12 +33,13 @@ async function token_valid(token) {
     return (text === "true");
 }
 
-async function create_chat(chatName, members) {
+async function create_chat(chatName, members, username) {
     let usernames = [];
     for (var i = 0; i < members.length; i++) {
         usernames.push({ username: members[i].username });
     }
-    let json = JSON.stringify({ name: chatName, users: usernames });
+    let json = JSON.stringify({ name: chatName, users: usernames, admin: {username: username}});
+    console.log(json);
     return await (await fetch(API_URL + "/create-chat/", {
         method: 'POST',
         headers: {
@@ -48,8 +49,19 @@ async function create_chat(chatName, members) {
     })).json();
 }
 
+async function edit_chat(name, added_users, admin, chatid, token) {
+    let json = JSON.stringify({ new_name: name, added_users: added_users, new_admin: admin});
+    await fetch(API_URL + "/edit-chat/" + chatid + "/" + token, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json,
+    });
+}
+
 async function subscribeEvents(token, onRecievedMessage) {
-    let lastPingTime = 0;
+    let lastPingTime = Date.now();
     let stop = false;
     let pingInterval = setInterval(() => {
         if (Date.now() - lastPingTime > 60000) {
@@ -104,4 +116,4 @@ async function received_message(token, message) {
     });
 }
 
-export default { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message };
+export default { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat };
