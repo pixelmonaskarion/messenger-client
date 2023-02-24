@@ -1,5 +1,5 @@
 import { TextDecoderStream } from "./TextDecoderStream";
-const API_URL = "http://71.197.148.230:8000";
+const API_URL = "https://minecraft.themagicdoor.org:8000";
 
 async function get_user(username) {
     let reponse = await fetch(API_URL + "/get-user/" + username);
@@ -9,6 +9,17 @@ async function get_user(username) {
 async function get_chat(chatid, token) {
     let reponse = await fetch(API_URL + "/get-chat/" + chatid + "/" + token);
     return reponse.json();
+}
+
+async function create_chat_link(chatid, token) {
+    let reponse = await fetch(API_URL + "/create-chat-link/" + chatid + "/" + token);
+    return reponse.json();
+}
+
+async function join_chat_link(join_code, token) {
+    await fetch(API_URL + "/join-chat-link/" + join_code + "/" + token, {
+        method: 'POST',
+    });
 }
 
 async function login(username, password) {
@@ -61,6 +72,7 @@ async function edit_chat(name, added_users, admin, chatid, token) {
 }
 
 async function subscribeEvents(token, onRecievedMessage) {
+    console.log("subscribing to events");
     let lastPingTime = Date.now();
     let stop = false;
     let pingInterval = setInterval(() => {
@@ -79,12 +91,13 @@ async function subscribeEvents(token, onRecievedMessage) {
         while (!stop) {
             const { done, value } = await reader.read();
             if (done) {
+                console.log("events done, restarting");
                 subscribeEvents(token, onRecievedMessage);
                 stop = true;
             }
             let values = value.split("|");
-            values.pop();
             console.log(values);
+            values.pop();
             for (var i = 0; i < values.length; i++) {
                 let message = values[i];
                 if (JSON.parse(message).server !== undefined) {
@@ -100,7 +113,8 @@ async function subscribeEvents(token, onRecievedMessage) {
 }
 
 async function send_message(text, token, chat) {
-    let json = JSON.stringify({ text: text, from_user: token, chat: chat });
+    let timestamp = Date.now();
+    let json = JSON.stringify({ text: text, from_user: token, chat: chat, timestamp: timestamp });
     fetch(API_URL + "/post-message", {
         method: 'POST',
         headers: {
@@ -111,9 +125,25 @@ async function send_message(text, token, chat) {
 }
 
 async function received_message(token, message) {
-    fetch(API_URL + "/received-message/"+token+"/"+message, {
+    let json = JSON.stringify(message);
+    fetch(API_URL + "/received-message/"+token, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json,
     });
 }
 
-export default { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat };
+async function read_message(token, message) {
+    let json = JSON.stringify(message);
+    fetch(API_URL + "/read-message/"+token, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json,
+    });
+}
+
+export default { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link };

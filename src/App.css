@@ -3,21 +3,16 @@ body {
 	font-weight: bold;
 	background-color: #292834;
 	color: white;
-	overflow: hidden
+	overflow-x: hidden;
+}
+
+.ChatPreview:hover {
+	background-color: #403e51;
+	cursor: pointer;
 }
 
 p {
 	margin: 0px;
-}
-
-.Message {
-	color: rgb(255, 255, 255);
-	margin-bottom: 10px;
-	padding: 5px;
-	width: 100%;
-	border: hsl(245, 13%, 50%);
-	border-radius: 1px;
-	border-style: none none none none;
 }
 
 .MessageOtherBottom, .MessageOtherTop, .MessageOther, .MessageMe, .MessageMeTop, .MessageMeBottom {
@@ -28,6 +23,8 @@ p {
 	border-radius: 10px;
 	margin-top: 1px;
 	margin-bottom: 1px;
+	text-align: end;
+	
 }
 
 .MessageMeTop {
@@ -43,9 +40,6 @@ p {
 }
 
 .MessageMeBottom {
-	width: fit-content;
-	height: fit-content;
-	position: relative;
 	float: right;
 	clear: both;
 	margin-right: 25px;
@@ -56,15 +50,9 @@ p {
 	border-radius: 10px;
 	border-top-right-radius: 5px;
 	border-bottom-right-radius: 15px;
-	background: #555;
-	margin-top: 1px;
-	margin-bottom: 1px;
 }
 
 .MessageMe {
-	width: fit-content;
-	height: fit-content;
-	position: relative;
 	float: right;
 	clear: both;
 	margin-right: 25px;
@@ -72,16 +60,12 @@ p {
 	padding-left: 10px;
 	padding-top: 5px;
 	padding-bottom: 5px;
-	background: #555;
-	margin-top: 1px;
-	margin-bottom: 1px;
-	border-radius: 10px;
 	border-top-right-radius: 5px;
 	border-bottom-right-radius: 5px;
 }
 
 .MessageOther {
-	clear: right;
+	clear: both;
 	text-align: left;
 	left: 25px;
 	padding-left: 25px;
@@ -90,29 +74,23 @@ p {
 	padding-bottom: 5px;
 	border-top-left-radius: 5px;
 	border-bottom-left-radius: 5px;
-	margin-top: 1px;
-	margin-bottom: 1px;
 	background: #555;
 }
 
 .MessageOtherTop {
-	clear: right;
+	clear: both;
 	text-align: left;
 	left: 25px;
 	padding-left: 25px;
 	padding-right: 10px;
 	padding-top: 5px;
 	padding-bottom: 5px;
-	border-radius: 10px;
 	border-bottom-left-radius: 5px;
 	border-top-left-radius: 15px;
-	margin-top: 1px;
-	margin-bottom: 1px;
-	background: #555;
 }
 
 .MessageOtherBottom {
-	clear: right;
+	clear: both;
 	text-align: left;
 	left: 25px;
 	padding-left: 25px;
@@ -142,6 +120,15 @@ p {
 .AllMessages {
 	overflow-y: scroll;
 	height: 85vh;
+}
+
+.Banner {
+	background-color: #353342;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	clear: both;
 }
 
 .MessagePreview {
@@ -187,10 +174,11 @@ p {
 	border-radius: 2vh;
 	background-color: rgb(104, 61, 212);
 	border: 5px solid rgb(104, 61, 212);
+	cursor: pointer;
 }
 
 .NewChatButton {
-	position: absolute;
+	position: fixed;
 	bottom: 40px;
 	right: 40px;
 	height: 5vh;
@@ -200,6 +188,7 @@ p {
 	border: 3px solid rgb(104, 61, 212);
 	text-align: center;
 	transition-duration: 0.4s;
+	cursor: pointer;
 }
 
 .NewChatButton:hover {
@@ -209,7 +198,7 @@ p {
 }
 
 .SettingsButton {
-	position: absolute;
+	position: fixed;
 	top: 20px;
 	right: 20px;
 	height: 2.5vh;
@@ -219,6 +208,7 @@ p {
 	border: 3px solid rgb(104, 61, 212);
 	text-align: center;
 	transition-duration: 0.4s;
+	cursor: pointer;
 }
 
 .SettingsButton:hover {
@@ -238,6 +228,7 @@ p {
 	border: 3px solid rgb(104, 61, 212);
 	text-align: center;
 	transition-duration: 0.4s;
+	cursor: pointer;
 }
 
 .SquareButton:hover {
@@ -291,6 +282,7 @@ p {
 	width: 10vh;
 	font-size: 2vh;
 	transition-duration: 0.4s;
+	cursor: pointer;
 }
 
 .StyledButton:hover {
@@ -311,7 +303,7 @@ p {
 
 .AbsoluteTitle {
 	width: 100%;
-	background-color: #3d3c4d;
+	background-color: #403e51;
 	padding-top: 15px;
 	padding-bottom: 15px;
 	margin-top: 0px;
