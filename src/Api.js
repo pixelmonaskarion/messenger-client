@@ -1,4 +1,5 @@
 import { TextDecoderStream } from "./TextDecoderStream";
+import Crypto from "./Crypto";
 const API_URL = "https://minecraft.themagicdoor.org:8000";
 
 async function get_user(username) {
@@ -114,6 +115,18 @@ async function subscribeEvents(token, onRecievedMessage) {
 
 async function send_message(text, token, chat) {
     let timestamp = Date.now();
+    let json = JSON.stringify(Crypto.encrypt_message({ text: text, from_user: token, chat: chat, timestamp: timestamp }, "1234"));
+    fetch(API_URL + "/post-message", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json,
+    });
+}
+
+async function send_message_unencrypted(text, token, chat) {
+    let timestamp = Date.now();
     let json = JSON.stringify({ text: text, from_user: token, chat: chat, timestamp: timestamp });
     fetch(API_URL + "/post-message", {
         method: 'POST',
@@ -124,26 +137,50 @@ async function send_message(text, token, chat) {
     });
 }
 
+
 async function received_message(token, message) {
-    let json = JSON.stringify(message);
-    fetch(API_URL + "/received-message/"+token, {
+    fetch(API_URL + "/received-message/"+token+"/"+message.chat+"/"+message.id+"/"+message.from_user.username, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: json,
     });
 }
 
 async function read_message(token, message) {
-    let json = JSON.stringify(message);
-    fetch(API_URL + "/read-message/"+token, {
+    fetch(API_URL + "/read-message/"+token+"/"+message.chat+"/"+message.id+"/"+message.from_user.username, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: json,
     });
 }
 
-export default { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link };
+async function react_message(token, chatid, messageid, emoji) {
+    fetch(API_URL + "/react-message/"+token+"/"+chatid+"/"+messageid+"/"+emoji, {
+        method: 'POST',
+    });
+}
+
+async function change_pfp(image, extension, token) {
+    const formData = new FormData();
+    formData.append('pfp_image', image);
+    formData.append('extension', extension);
+    return fetch(API_URL + "/change-pfp/"+token, {
+        method: 'POST',
+        body: formData,
+        // If you add this, upload won't work
+        // headers: {
+        //   'Content-Type': 'multipart/form-data',
+        // }
+      });
+}
+
+async function delete_pfp(token) {
+    console.log("deleting")
+    fetch(API_URL + "/delete-pfp/"+token, {
+        method: 'POST',
+    });
+}
+
+async function change_pfp_form(form, token) {
+    fetch(API_URL + "/change-pfp/"+token, {
+        method: 'POST',
+      });
+}
+let exported = { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted };
+export default exported;
