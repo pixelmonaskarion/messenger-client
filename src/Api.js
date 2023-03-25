@@ -28,8 +28,19 @@ async function login(username, password) {
     return reponse.json();
 }
 
-async function set_user_profile(token, display_name, color) {
-    let json = JSON.stringify({ name: display_name, color: color});
+async function create_account(username, password, display_name, color, public_key) {
+    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
+    let response = await fetch(API_URL + "/create-account/" + username + "/" + password, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json,
+    });
+    return response.json();
+}
+
+async function set_user_profile(token, display_name, color, public_key) {
+    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
     await fetch(API_URL + "/create-user/" + token, {
         method: 'POST',
         headers: {
@@ -93,10 +104,12 @@ async function subscribeEvents(token, onRecievedMessage) {
             const { done, value } = await reader.read();
             if (done) {
                 console.log("events done, restarting");
-                subscribeEvents(token, onRecievedMessage);
+                if (await token_valid(token)) {
+                    subscribeEvents(token, onRecievedMessage);
+                }
                 stop = true;
             }
-            let values = value.split("|");
+            let values = value.split("|endmessage|");
             console.log(values);
             values.pop();
             for (var i = 0; i < values.length; i++) {
@@ -113,10 +126,9 @@ async function subscribeEvents(token, onRecievedMessage) {
     });
 }
 
-async function send_message(text, token, chat) {
-    let timestamp = Date.now();
-    let json = JSON.stringify(Crypto.encrypt_message({ text: text, from_user: token, chat: chat, timestamp: timestamp }, "1234"));
-    fetch(API_URL + "/post-message", {
+async function send_message(encrypted_messages, token) {
+    let json = JSON.stringify(encrypted_messages);
+    fetch(API_URL + "/post-message/"+token, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -182,5 +194,22 @@ async function change_pfp_form(form, token) {
         method: 'POST',
       });
 }
-let exported = { get_user, login, set_user_profile, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted };
+
+async function connect_device(url) {
+    let res = await fetch(url);
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    while (true) {
+        const { done, value } = await reader.read();
+        return value;
+    }
+}
+
+async function post_device_connection(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        body: data,
+      });
+}
+
+let exported = { API_URL, post_device_connection, connect_device, get_user, login, create_account, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted };
 export default exported;

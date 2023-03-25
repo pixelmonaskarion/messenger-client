@@ -413,6 +413,26 @@ p {
 	border-radius: 3px;
 }
 
+.ConnectedDevicesButton {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	height: 2.5vh;
+	width: 2.5vh;
+	border-radius: 8px;
+	background-color: rgb(104, 61, 212);
+	border: 3px solid rgb(104, 61, 212);
+	text-align: center;
+	transition-duration: 0.4s;
+	cursor: pointer;
+}
+
+.ConnectedDevicesButton:hover {
+	background-color: rgb(134, 91, 244);
+	border: 3px solid rgb(134, 91, 244);
+	border-radius: 3px;
+}
+
 .noselect {
 	-webkit-touch-callout: none;
 	/* iOS Safari */

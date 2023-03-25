@@ -118,6 +118,7 @@ class SettingsScreen extends React.Component {
 		}
 		return (<div>
 			<BackArrow onClick={() => this.props.homeScreen()}></BackArrow>
+			<ConnectedDevicesButton onClick={() => this.props.connectedDevicesScreen()}></ConnectedDevicesButton>
 			<h1>Settings</h1>
 			{content}
 		</div>);
@@ -139,6 +140,14 @@ class SettingsScreen extends React.Component {
 				}
 			});
 		}
+	}
+}
+
+class ConnectedDevicesButton extends React.Component {
+	render() {
+		return (<div className="ConnectedDevicesButton" onClick={this.props.onClick}>
+			<p className="noselect">CD</p>
+		</div>);
 	}
 }
 

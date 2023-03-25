@@ -9,6 +9,8 @@ import HomeScreen from './screens/HomeScreen';
 import ChatSettingsScreen from './screens/ChatSettingsScreen';
 import NewChatScreen from './screens/NewChatScreen';
 import ChatScreen from './screens/ChatScreen';
+import ConnectedDevicesScreen from './screens/ConnectedDevicesScreen';
+import QrCodeConnectScreen from './screens/QrCodeConnectScreen';
 
 class App extends React.Component {
 	constructor(props) {
@@ -36,7 +38,13 @@ class App extends React.Component {
 				saved_state = { ...saved_state, messages: messages };
 			}
 			if (window.localStorage.getItem('private_key') !== null && localStorage.getItem('private_key') !== "undefined") {
-				saved_state = { ...saved_state, token: JSON.parse(localStorage.getItem('private_key')) };
+				saved_state = { ...saved_state, private_key: JSON.parse(localStorage.getItem('private_key')) };
+			}
+			if (window.localStorage.getItem('public_key') !== null && localStorage.getItem('public_key') !== "undefined") {
+				saved_state = { ...saved_state, public_key: JSON.parse(localStorage.getItem('public_key')) };
+			}
+			if (window.localStorage.getItem('password') !== null && localStorage.getItem('password') !== "undefined") {
+				saved_state = { ...saved_state, password: JSON.parse(localStorage.getItem('password')) };
 			}
 		} else {
 			alert("Your browser does not support local storage!");
@@ -78,18 +86,50 @@ class App extends React.Component {
 		} else if (this.state.screen === "new chat") {
 			content = <NewChatScreen homeScreen={() => this.homeScreen()} getUsername={() => { return this.state.username; }} chatScreen={(chat) => this.chatScreen(chat)}></NewChatScreen>
 		} else if (this.state.screen === "sign in") {
-			content = <SignInScreen setUser={(token, username, callback) => { this.setState({ ...this.state, token: token, username: username }, callback); }} homeScreen={() => this.homeScreen()} onReceivedMessage={(message) => this.onReceivedMessage(message)}></SignInScreen>;
+			content = <SignInScreen qrScreen={() => this.qrScreen()} setUser={(token, username, password, keys) => this.setUser(token, username, password, keys)} homeScreen={() => this.homeScreen()} onReceivedMessage={(message) => this.onReceivedMessage(message)}></SignInScreen>;
 		} else if (this.state.screen === "chat") {
-			content = <ChatScreen getHighlighted={() => this.state.highlightedMessage} setHighlighted={(message) => { this.setHighlighted(message) }} readMessage={(message) => this.readMessage(message)} addChat={(id, chat, callback) => { this.addChat(id, chat, callback) }} chatSettings={(chat) => { this.chatSettings(chat) }} homeScreen={() => this.homeScreen()} getChat={() => this.getChat()} getToken={() => this.state.token} getMessages={() => this.state.messages} getUsername={() => this.state.username}></ChatScreen>
+			content = <ChatScreen sendMessage={(text, chat) => this.sendMessage(text, chat)} getHighlighted={() => this.state.highlightedMessage} setHighlighted={(message) => { this.setHighlighted(message) }} readMessage={(message) => this.readMessage(message)} addChat={(id, chat, callback) => { this.addChat(id, chat, callback) }} chatSettings={(chat) => { this.chatSettings(chat) }} homeScreen={() => this.homeScreen()} getChat={() => this.getChat()} getToken={() => this.state.token} getMessages={() => this.state.messages} getUsername={() => this.state.username}></ChatScreen>
 		} else if (this.state.screen === "settings") {
-			content = <SettingsScreen homeScreen={() => this.homeScreen()} getToken={() => this.state.token} getUsername={() => this.state.username}></SettingsScreen>
+			content = <SettingsScreen connectedDevicesScreen={() => this.connectedDevicesScreen()} homeScreen={() => this.homeScreen()} getToken={() => this.state.token} getUsername={() => this.state.username}></SettingsScreen>
 		} else if (this.state.screen === "chat settings") {
 			content = <ChatSettingsScreen addChat={(id, chat, callback) => { this.addChat(id, chat, callback) }} getToken={() => this.state.token} chatScreen={(chat) => this.chatScreen(chat)} getChat={() => this.getChat()}></ChatSettingsScreen>
+		} else if (this.state.screen === "connected devices") {
+			content = <ConnectedDevicesScreen getPrivateKey={() => this.state.private_key} getPassword={() => this.state.password} getUsername={() => this.state.username}></ConnectedDevicesScreen>;
+		} else if (this.state.screen === "qr connect") {
+			content = <QrCodeConnectScreen setUser={(token, username, password, keys) => this.setUser(token, username, password, keys)} back={() => {this.setState({...this.state, screen: "sign in"})}}></QrCodeConnectScreen>;
 		}
 		return (<div className="App">
 			{content}
 		</div>);
 	}
+
+	setUser(token, username, password, keys) {
+		console.log("keys", keys);
+		this.setState({ ...this.state, token: token, username: username, password: password, private_key: keys.privateKey, public_key: keys.publicKey });
+		api.subscribeEvents(token, (message) => this.onReceivedMessage(message));
+		this.homeScreen();
+	}
+
+	qrScreen() {
+		this.setState({ ...this.state, screen: "qr connect" });
+	}
+	
+	connectedDevicesScreen() {
+		this.setState({ ...this.state, screen: "connected devices" });
+	}
+
+	async sendMessage(text, chat) {
+		let timestamp = Date.now();
+		let encrypted_messages = {};
+		for (let i = 0; i < chat.users.length; i++) {
+			let user = chat.users[i];
+			let user_profile = await api.get_user(user.username);
+			let message = await Crypto.encrypt_message({ text: text, from_user: this.state.token, chat: chat.id, timestamp: timestamp }, user_profile.public_key);
+			encrypted_messages[user_profile.username] = message;
+		}
+		api.send_message({encrypted_messages: encrypted_messages}, this.state.token);
+	}
+
 	setHighlighted(message) {
 		this.setState({ ...this.state, highlightedMessage: message });
 	}
@@ -116,8 +156,9 @@ class App extends React.Component {
 		if (chats === undefined) {
 			chats = new Map();
 		}
-		chats.set(id, chat);
-		if (chat.server !== undefined) {
+		if (chat.server === undefined) {
+			chats.set(id, chat);
+		} else if (chat.server === "no chat") {
 			chats.delete(id);
 		}
 		this.setState({ ...this.state, chats: chats }, callback);
@@ -183,7 +224,7 @@ class App extends React.Component {
 		}
 		let message_object = JSON.parse(message);
 		console.log(message_object);
-		let finish = () => {
+		let finish = async () => {
 			if (message_object.read !== undefined) {
 				if (message_object.read.from !== this.state.username) {	
 					if (this.state.chats.get(message_object.read.message.chat) !== undefined) {
@@ -199,7 +240,8 @@ class App extends React.Component {
 					}
 				}
 			} else if (message_object.message !== undefined) {
-				message_object.message = Crypto.decrypt_message(message_object.message, "1234");
+				console.log(this.state.private_key, this.state.public_key);
+				message_object.message = await Crypto.decrypt_message(message_object.message, this.state.private_key);
 				api.received_message(this.state.token, message_object.message);
 				if (message_object.message.from_user.username !== this.state.username) {
 					api.get_user(message_object.message.from_user.username).then((user) => {
@@ -310,10 +352,12 @@ class App extends React.Component {
 
 	componentDidUpdate() {
 		if (typeof (Storage) !== "undefined") {
-			if (this.state.loading === false && this.state.screen !== "sign in") {
+			if (this.state.loading === false && this.state.screen !== "sign in" && this.state.screen !== "qr connect") {
 				window.localStorage.setItem("username", JSON.stringify(this.state.username));
 				window.localStorage.setItem("token", JSON.stringify(this.state.token));
 				window.localStorage.setItem("private_key", JSON.stringify(this.state.private_key));
+				window.localStorage.setItem("public_key", JSON.stringify(this.state.public_key));
+				window.localStorage.setItem("password", JSON.stringify(this.state.password));
 				if (this.state.chats !== undefined) {
 					window.localStorage.setItem("chats", JSON.stringify(Object.fromEntries(this.state.chats)));
 				}

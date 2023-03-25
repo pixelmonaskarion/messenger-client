@@ -45,7 +45,7 @@ class ChatScreen extends React.Component {
 				<h1 className='AbsoluteTitle'>{this.props.getChat().name} </h1>
 			</div>
 			<div className='AllMessages' id="allMessages" onClick={() => { this.props.setHighlighted(undefined) }}>{messages}</div>
-			<MessageBox getToken={this.props.getToken} getChat={this.props.getChat} inputRef={this.state.message_input_ref}></MessageBox>
+			<MessageBox sendMessage={this.props.sendMessage} getToken={this.props.getToken} getChat={this.props.getChat} inputRef={this.state.message_input_ref}></MessageBox>
 			<BackArrow onClick={() => this.props.homeScreen()}></BackArrow>
 			<EditButton onClick={() => this.props.chatSettings(this.props.getChat())}></EditButton>
 		</div>);
@@ -80,8 +80,7 @@ class MessageBox extends React.Component {
 			return;
 		}
 		document.getElementById("SendMessageText").value = "";
-		let token = this.props.getToken();
-		api.send_message(message_text, token, this.props.getChat().id);
+		this.props.sendMessage(message_text, this.props.getChat());
 	}
 }
 
