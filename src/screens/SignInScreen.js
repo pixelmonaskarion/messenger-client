@@ -45,7 +45,7 @@ class SignInScreen extends React.Component {
 			return;
 		}
 		let keys = await Crypto.generateKeyPair();
-		let json = api.create_account(username, password, display_name, "#5c2ed1", keys.publicKey);
+		let json = await api.create_account(username, password, display_name, "#5c2ed1", keys.publicKey);
 		if (json["server"] !== undefined) {
 			if (json["server"] === "incorrect password") {
 				this.setState({ ...this.state, error: "Incorrect password" });
@@ -55,6 +55,7 @@ class SignInScreen extends React.Component {
 				this.setState({ ...this.state, error: "An unknown error occured" });
 			}
 		} else {
+			console.log(json);
 			this.props.setUser(json.token, username, password, keys);
 		}
 	}

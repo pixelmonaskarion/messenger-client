@@ -66,7 +66,7 @@ class Message extends React.Component {
 		}
 		let status = undefined;
 		let status_text = "Sent";
-		if (this.props.message.read !== undefined) {
+		if (this.props.message.read !== undefined || this.props.message.read !== "") {
 			status_text = this.props.message.read;
 		}
 

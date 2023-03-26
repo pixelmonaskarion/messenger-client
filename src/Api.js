@@ -1,6 +1,6 @@
 import { TextDecoderStream } from "./TextDecoderStream";
 import Crypto from "./Crypto";
-const API_URL = "https://minecraft.themagicdoor.org:8000";
+const API_URL = "http://localhost:8000";
 
 async function get_user(username) {
     let reponse = await fetch(API_URL + "/get-user/" + username);
@@ -31,6 +31,7 @@ async function login(username, password) {
 async function create_account(username, password, display_name, color, public_key) {
     let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
     let response = await fetch(API_URL + "/create-account/" + username + "/" + password, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },

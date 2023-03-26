@@ -104,7 +104,7 @@ class App extends React.Component {
 	}
 
 	setUser(token, username, password, keys) {
-		console.log("keys", keys);
+		console.log("keys", keys, "token", token);
 		this.setState({ ...this.state, token: token, username: username, password: password, private_key: keys.privateKey, public_key: keys.publicKey });
 		api.subscribeEvents(token, (message) => this.onReceivedMessage(message));
 		this.homeScreen();
