@@ -65,13 +65,45 @@ const generateRSAKeyPair = async () => {
 	return keyPair;
 };
 
+const arrayBufferToHexString = (arrayBuffer) => {
+	const uint8Array = new Uint8Array(arrayBuffer);
+	const hexStringArray = [];
+	uint8Array.forEach((byte) => {
+		const hexString = byte.toString(16).padStart(2, "0");
+		hexStringArray.push(hexString);
+	});
+	return hexStringArray.join("");
+};
+
+const hexStringToArrayBuffer = (hexString) => {
+	const strippedString = hexString.replace(/[^A-Fa-f0-9]/g, "");
+	const byteLength = strippedString.length / 2;
+	const uint8Array = new Uint8Array(byteLength);
+	for (let i = 0; i < byteLength; ++i) {
+		const byteString = strippedString.substr(i * 2, 2);
+		uint8Array[i] = parseInt(byteString, 16);
+	}
+	return uint8Array.buffer;
+};
+
+const hexStringToUint8 = (hexString) => {
+	const strippedString = hexString.replace(/[^A-Fa-f0-9]/g, "");
+	const byteLength = strippedString.length / 2;
+	const uint8Array = new Uint8Array(byteLength);
+	for (let i = 0; i < byteLength; ++i) {
+		const byteString = strippedString.substr(i * 2, 2);
+		uint8Array[i] = parseInt(byteString, 16);
+	}
+	return uint8Array;
+};
+
 // Export RSA public key as a string
 const exportRSAPublicKeyAsString = async (publicKey) => {
 	const exportedKey = await window.crypto.subtle.exportKey(
 		"spki",
 		publicKey
 	);
-	const exportedKeyString = String.fromCharCode(...new Uint8Array(exportedKey));
+	const exportedKeyString = arrayBufferToHexString(exportedKey);
 	return exportedKeyString;
 };
 
@@ -81,19 +113,16 @@ const exportRSAPrivateKeyAsString = async (privateKey) => {
 		"pkcs8",
 		privateKey
 	);
-	const exportedKeyString = String.fromCharCode(...new Uint8Array(exportedKey));
+	const exportedKeyString = arrayBufferToHexString(exportedKey);
 	return exportedKeyString;
 };
 
 // Import RSA public key from string
 const importRSAPublicKeyFromString = async (keyString) => {
-	const keyData = new Uint8Array(keyString.length);
-	for (let i = 0; i < keyString.length; i++) {
-		keyData[i] = keyString.charCodeAt(i);
-	}
+	const keyBuffer = hexStringToArrayBuffer(keyString);
 	const publicKey = await window.crypto.subtle.importKey(
 		"spki",
-		keyData.buffer,
+		keyBuffer,
 		{
 			name: "RSA-OAEP",
 			hash: "SHA-256",
@@ -106,13 +135,10 @@ const importRSAPublicKeyFromString = async (keyString) => {
 
 // Import RSA private key from string
 const importRSAPrivateKeyFromString = async (keyString) => {
-	const keyData = new Uint8Array(keyString.length);
-	for (let i = 0; i < keyString.length; i++) {
-		keyData[i] = keyString.charCodeAt(i);
-	}
+	const keyBuffer = hexStringToArrayBuffer(keyString);
 	const privateKey = await window.crypto.subtle.importKey(
 		"pkcs8",
-		keyData.buffer,
+		keyBuffer,
 		{
 			name: "RSA-OAEP",
 			hash: "SHA-256",
@@ -149,15 +175,16 @@ const encryptDataWithRSAPublicKey = async (data, publicKey) => {
 		encryptedData.set(new Uint8Array(block), offsetBytes);
 		offsetBytes += block.byteLength;
 	});
-	const encryptedDataString = String.fromCharCode(...encryptedData);
+	const encryptedDataString = arrayBufferToHexString(encryptedData);
 	return encryptedDataString;
 };
 
 const decryptDataWithRSAPrivateKey = async (encryptedDataString, privateKey) => {
-	const encryptedData = new Uint8Array(encryptedDataString.length);
-	for (let i = 0; i < encryptedDataString.length; i++) {
-		encryptedData[i] = encryptedDataString.charCodeAt(i);
-	}
+	// const encryptedData = new Uint8Array(encryptedDataString.length);
+	// for (let i = 0; i < encryptedDataString.length; i++) {
+	// 	encryptedData[i] = encryptedDataString.charCodeAt(i);
+	// }
+	const encryptedData = hexStringToUint8(encryptedDataString);
 	const blockSize = privateKey.algorithm.modulusLength / 8;
 	const numBlocks = Math.ceil(encryptedData.length / blockSize);
 	const decryptedBlocks = [];

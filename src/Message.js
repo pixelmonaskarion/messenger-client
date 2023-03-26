@@ -112,7 +112,8 @@ class Message extends React.Component {
 			reactions = <Reactions from_me={from_me} react={(emoji) => this.react(emoji)}></Reactions>;
 		}
 		let message_reaction_elements = [];
-		if (this.props.message.reactions !== undefined && this.state.reaction_user_colors !== undefined) {
+		//http://localhost:8000/db/message/298849957/4217050366/2369556355
+		if (this.props.message.reactions !== undefined && this.state.reaction_user_colors !== undefined && Object.keys(this.props.message.reactions).length > 0) {
 			let message_reactions = this.props.message.reactions;
 			for (var user in message_reactions) {
 				message_reaction_elements.push(<MessageReaction from_me={from_me} key={user} user={user} emoji={message_reactions[user]} color={this.state.reaction_user_colors[user]}></MessageReaction>);
@@ -148,7 +149,6 @@ class Message extends React.Component {
 	}
 
 	componentDidMount() {
-
 		this.props.getUser(this.props.message.from_user.username).then((user_profile) => {
 			this.setState({ ...this.state, color: user_profile.color, display_name: user_profile.name }, () => {
 				this.setState({ ...this.state, loading: false });

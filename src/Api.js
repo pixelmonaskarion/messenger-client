@@ -31,6 +31,7 @@ async function login(username, password) {
 async function create_account(username, password, display_name, color, public_key) {
     let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
     let response = await fetch(API_URL + "/create-account/" + username + "/" + password, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
