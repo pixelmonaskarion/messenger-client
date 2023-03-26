@@ -55,6 +55,7 @@ class SignInScreen extends React.Component {
 				this.setState({ ...this.state, error: "An unknown error occured" });
 			}
 		} else {
+			console.log(json);
 			this.props.setUser(json.token, username, password, keys);
 		}
 	}

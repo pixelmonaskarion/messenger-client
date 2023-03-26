@@ -1,6 +1,6 @@
 import { TextDecoderStream } from "./TextDecoderStream";
 import Crypto from "./Crypto";
-const API_URL = "https://minecraft.themagicdoor.org:8000";
+const API_URL = "http://localhost:8000";
 
 async function get_user(username) {
     let reponse = await fetch(API_URL + "/get-user/" + username);
