@@ -69,19 +69,33 @@ class App extends React.Component {
 						...saved_state,
 						screen: saved_screen,
 					}, async () => {
-						if (this.state.chats !== undefined) {
-							for (const chat of this.state.chats.keys()) {
-								if (this.state.messages.get(chat) == undefined) {
+						if (this.state.chats == undefined) {
+							this.state.chats = new Map();
+						}
+						if (this.state.messages == undefined) {
+							this.state.messages = new Map();
+						}
+						let chats = await api.get_chats(this.state.token);
+						for (const chat_index in chats) {
+							let chat = chats[chat_index];
+							let chat_data = await api.get_chat(chat, this.state.token);
+							if (chat_data.server === undefined) {
+								this.state.chats.set(chat, chat_data);
+								if (this.state.messages.get(chat) === undefined) {
 									this.state.messages.set(chat, []);
-								} else {
-									last_timestamp = this.state.messages.get(chat)[this.state.messages.get(chat).length-1].timestamp;
-									console.log(this.state.messages.get(chat)[this.state.messages.get(chat).length-1]);
 								}
-								let new_messages = JSON.parse(await api.get_new_messages(this.state.token, chat, last_timestamp));
-								console.log(new_messages);
-								for (const message in new_messages) {
-									this.state.messages.get(chat).push(message);
-								}
+							}
+						}
+						for (const chat of this.state.chats.keys()) {
+							let last_timestamp = 0;
+							if (this.state.messages.get(chat) == undefined) {
+								this.state.messages.set(chat, []);
+							} else if (this.state.messages.get(chat).length > 0) {
+								last_timestamp = this.state.messages.get(chat)[this.state.messages.get(chat).length-1].timestamp;
+							}
+							let new_messages = await api.get_new_messages(this.state.token, chat, last_timestamp);
+							for (const i in new_messages) {
+								this.onReceivedMessage(JSON.stringify(new_messages[i]));
 							}
 						}
 						this.setState({ ...this.state, loading: false });
@@ -240,22 +254,7 @@ class App extends React.Component {
 		let message_object = JSON.parse(message);
 		console.log(message_object);
 		let finish = async () => {
-			if (message_object.read !== undefined) {
-				if (message_object.read.from !== this.state.username) {	
-					if (this.state.chats.get(message_object.read.message.chat) !== undefined) {
-						let messages = this.state.messages;
-						for (let i = 0; i < messages.get(message_object.read.message.chat).length; i++) {
-							if (messages.get(message_object.read.message.chat)[i].id === message_object.read.message.id) {
-								if (messages.get(message_object.read.message.chat)[i].read !== "Read" || message_object.read.status !== "Delivered") {
-									messages.get(message_object.read.message.chat)[i].read = message_object.read.status;
-								}
-							}
-						}
-						this.setState({ ...this.state, messages: messages });
-					}
-				}
-			} else if (message_object.message !== undefined) {
-				console.log(this.state.private_key, this.state.public_key);
+			if (message_object.message !== undefined) {
 				message_object.message = await Crypto.decrypt_message(message_object.message, this.state.private_key);
 				api.received_message(this.state.token, message_object.message);
 				if (message_object.message.from_user.username !== this.state.username) {
@@ -279,6 +278,20 @@ class App extends React.Component {
 						let new_state = { ...this.state, chats: chats_copy, active_chat: chat.id, messages: messages_copy };
 						this.setState(new_state);
 					});
+				}
+			} else if (message_object.read !== undefined) {
+				if (message_object.read.from !== this.state.username) {	
+					if (this.state.chats.get(message_object.read.message.chat) !== undefined) {
+						let messages = this.state.messages;
+						for (let i = 0; i < messages.get(message_object.read.message.chat).length; i++) {
+							if (messages.get(message_object.read.message.chat)[i].id === message_object.read.message.id) {
+								if (messages.get(message_object.read.message.chat)[i].read !== "Read" || message_object.read.status !== "Delivered") {
+									messages.get(message_object.read.message.chat)[i].read = message_object.read.status;
+								}
+							}
+						}
+						this.setState({ ...this.state, messages: messages });
+					}
 				}
 			} else if (message_object.banner !== undefined) {
 				if (this.state.chats.get(message_object.banner.chat) !== undefined) {
