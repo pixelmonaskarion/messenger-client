@@ -1,6 +1,6 @@
 import { TextDecoderStream } from "./TextDecoderStream";
 import Crypto from "./Crypto";
-const API_URL = "http://localhost:8000";
+const API_URL = "https://minecraft.themagicdoor.org:8000";
 
 async function get_user(username) {
     let reponse = await fetch(API_URL + "/get-user/" + username);
@@ -212,5 +212,9 @@ async function post_device_connection(url, data) {
       });
 }
 
-let exported = { API_URL, post_device_connection, connect_device, get_user, login, create_account, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted };
+async function get_new_messages(token, chat, last_timestamp) {
+    return fetch(API_URL+`/db/chat-messages/${token}/${chat}?after=${last_timestamp}`);
+}
+
+let exported = { API_URL, post_device_connection, connect_device, get_user, login, create_account, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted, get_new_messages };
 export default exported;

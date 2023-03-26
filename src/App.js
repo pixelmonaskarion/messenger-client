@@ -68,7 +68,22 @@ class App extends React.Component {
 					this.setState({
 						...saved_state,
 						screen: saved_screen,
-					}, () => {
+					}, async () => {
+						if (this.state.chats !== undefined) {
+							for (const chat of this.state.chats.keys()) {
+								if (this.state.messages.get(chat) == undefined) {
+									this.state.messages.set(chat, []);
+								} else {
+									last_timestamp = this.state.messages.get(chat)[this.state.messages.get(chat).length-1].timestamp;
+									console.log(this.state.messages.get(chat)[this.state.messages.get(chat).length-1]);
+								}
+								let new_messages = JSON.parse(await api.get_new_messages(this.state.token, chat, last_timestamp));
+								console.log(new_messages);
+								for (const message in new_messages) {
+									this.state.messages.get(chat).push(message);
+								}
+							}
+						}
 						this.setState({ ...this.state, loading: false });
 					});
 				});
