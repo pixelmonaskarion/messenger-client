@@ -1,7 +1,8 @@
 import { TextDecoderStream } from "./TextDecoderStream";
 import Crypto from "./Crypto";
-// const API_URL = "https://minecraft.themagicdoor.org:8000";
-const API_URL = "http://localhost:8000";
+const BASE_URL = "://minecraft.themagicdoor.org";
+const API_URL ="https" + BASE_URL + ":8000";
+const WS_URL = "wss" + BASE_URL + ":8008";
 
 async function get_user(username) {
     let reponse = await fetch(API_URL + "/get-user/" + username);
@@ -30,7 +31,7 @@ async function login(username, password) {
 }
 
 async function create_account(username, password, display_name, color, public_key) {
-    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
+    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key });
     let response = await fetch(API_URL + "/create-account/" + username + "/" + password, {
         method: 'POST',
         headers: {
@@ -42,7 +43,7 @@ async function create_account(username, password, display_name, color, public_ke
 }
 
 async function set_user_profile(token, display_name, color, public_key) {
-    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key});
+    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key });
     await fetch(API_URL + "/create-user/" + token, {
         method: 'POST',
         headers: {
@@ -63,7 +64,7 @@ async function create_chat(chatName, members, username) {
     for (var i = 0; i < members.length; i++) {
         usernames.push({ username: members[i].username });
     }
-    let json = JSON.stringify({ name: chatName, users: usernames, admin: {username: username}});
+    let json = JSON.stringify({ name: chatName, users: usernames, admin: { username: username } });
     console.log(json);
     return await (await fetch(API_URL + "/create-chat/", {
         method: 'POST',
@@ -75,7 +76,7 @@ async function create_chat(chatName, members, username) {
 }
 
 async function edit_chat(name, added_users, admin, chatid, token) {
-    let json = JSON.stringify({ new_name: name, added_users: added_users, new_admin: admin});
+    let json = JSON.stringify({ new_name: name, added_users: added_users, new_admin: admin });
     await fetch(API_URL + "/edit-chat/" + chatid + "/" + token, {
         method: 'POST',
         headers: {
@@ -85,7 +86,7 @@ async function edit_chat(name, added_users, admin, chatid, token) {
     });
 }
 
-async function subscribeEvents(token, onRecievedMessage) {
+async function subscribeEventsHttp(token, onRecievedMessage) {
     console.log("subscribing to events");
     let lastPingTime = Date.now();
     let stop = false;
@@ -128,9 +129,23 @@ async function subscribeEvents(token, onRecievedMessage) {
     });
 }
 
+async function subscribeEvents(token, onRecievedMessage) {
+    let websocket = new WebSocket(WS_URL + "/events/" + token);
+    websocket.addEventListener("message", (event) => {
+        let message = event.data;
+        if (JSON.parse(message).server !== undefined) {
+            if (JSON.parse(message).server === "ping") {
+                console.log("ping!");
+            }
+        } else {
+            onRecievedMessage(message);
+        }
+    });
+}
+
 async function send_message(encrypted_messages, token) {
     let json = JSON.stringify(encrypted_messages);
-    fetch(API_URL + "/post-message/"+token, {
+    fetch(API_URL + "/post-message/" + token, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -153,19 +168,19 @@ async function send_message_unencrypted(text, token, chat) {
 
 
 async function received_message(token, message) {
-    fetch(API_URL + "/received-message/"+token+"/"+message.chat+"/"+message.id+"/"+message.from_user.username, {
+    fetch(API_URL + "/received-message/" + token + "/" + message.chat + "/" + message.id + "/" + message.from_user.username, {
         method: 'POST',
     });
 }
 
 async function read_message(token, message) {
-    fetch(API_URL + "/read-message/"+token+"/"+message.chat+"/"+message.id+"/"+message.from_user.username, {
+    fetch(API_URL + "/read-message/" + token + "/" + message.chat + "/" + message.id + "/" + message.from_user.username, {
         method: 'POST',
     });
 }
 
 async function react_message(token, chatid, messageid, emoji) {
-    fetch(API_URL + "/react-message/"+token+"/"+chatid+"/"+messageid+"/"+emoji, {
+    fetch(API_URL + "/react-message/" + token + "/" + chatid + "/" + messageid + "/" + emoji, {
         method: 'POST',
     });
 }
@@ -174,27 +189,27 @@ async function change_pfp(image, extension, token) {
     const formData = new FormData();
     formData.append('pfp_image', image);
     formData.append('extension', extension);
-    return fetch(API_URL + "/change-pfp/"+token, {
+    return fetch(API_URL + "/change-pfp/" + token, {
         method: 'POST',
         body: formData,
         // If you add this, upload won't work
         // headers: {
         //   'Content-Type': 'multipart/form-data',
         // }
-      });
+    });
 }
 
 async function delete_pfp(token) {
     console.log("deleting")
-    fetch(API_URL + "/delete-pfp/"+token, {
+    fetch(API_URL + "/delete-pfp/" + token, {
         method: 'POST',
     });
 }
 
 async function change_pfp_form(form, token) {
-    fetch(API_URL + "/change-pfp/"+token, {
+    fetch(API_URL + "/change-pfp/" + token, {
         method: 'POST',
-      });
+    });
 }
 
 async function connect_device(url) {
@@ -210,16 +225,16 @@ async function post_device_connection(url, data) {
     return fetch(url, {
         method: 'POST',
         body: data,
-      });
+    });
 }
 
 async function get_new_messages(token, chat, last_timestamp) {
-    let res = await fetch(API_URL+`/db/chat-messages/${token}/${chat}?after=${last_timestamp}`);
+    let res = await fetch(API_URL + `/db/chat-messages/${token}/${chat}?after=${last_timestamp}`);
     return res.json();
 }
 
 async function get_chats(token) {
-    let res = await fetch(API_URL+`/db/chats/${token}`);
+    let res = await fetch(API_URL + `/db/chats/${token}`);
     let text = await res.text();
     return JSON.parse(text);
 }
