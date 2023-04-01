@@ -42,9 +42,9 @@ async function create_account(username, password, display_name, color, public_ke
     return response.json();
 }
 
-async function set_user_profile(token, display_name, color, public_key) {
-    let json = JSON.stringify({ name: display_name, color: color, public_key: public_key });
-    await fetch(API_URL + "/create-user/" + token, {
+async function set_user_profile(token, display_name, color) {
+    let json = JSON.stringify({ display_name: display_name, color: color });
+    await fetch(API_URL + "/edit-profile/" + token, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -239,5 +239,5 @@ async function get_chats(token) {
     return JSON.parse(text);
 }
 
-let exported = { API_URL, get_chats, post_device_connection, connect_device, get_user, login, create_account, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted, get_new_messages };
+let exported = { API_URL, get_chats, post_device_connection, connect_device, get_user, login, create_account, create_chat, subscribeEvents, send_message, get_chat, token_valid, received_message, edit_chat, read_message, create_chat_link, join_chat_link, change_pfp, change_pfp_form, delete_pfp, react_message, send_message_unencrypted, get_new_messages, set_user_profile };
 export default exported;

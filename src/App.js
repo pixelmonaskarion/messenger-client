@@ -55,7 +55,8 @@ class App extends React.Component {
 		api.token_valid(saved_state.token).then((token_valid) => {
 			if (!token_valid) {
 				console.log("invalid token:", saved_state.token);
-				//saved_state = {};
+				saved_state = {};
+				this.resetApp();
 				saved_screen = "sign in";
 				this.setState({
 					...saved_state,
@@ -394,6 +395,16 @@ class App extends React.Component {
 				}
 			}
 		}
+	}
+
+	resetApp() {
+		window.localStorage.removeItem("username");
+		window.localStorage.removeItem("token");
+		window.localStorage.removeItem("private_key");
+		window.localStorage.removeItem("public_key");
+		window.localStorage.removeItem("password");
+		window.localStorage.removeItem("chats");
+		window.localStorage.removeItem("messages");
 	}
 }
 
